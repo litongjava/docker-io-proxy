@@ -77,11 +77,6 @@ public class DockerV2DataHandler {
     try (Response upstreamResp = httpClient.newCall(reqBuilder.build()).execute()) {
       // 状态码
       response.setStatus(upstreamResp.code());
-      // 响应头
-//      Headers respH = upstreamResp.headers();
-//      for (String name : respH.names()) {
-//        response.setHeader(name, respH.get(name));
-//      }
       // 响应体（非 HEAD）
       if (!"HEAD".equalsIgnoreCase(method) && upstreamResp.body() != null) {
         byte[] respBytes = upstreamResp.body().bytes();
@@ -95,13 +90,19 @@ public class DockerV2DataHandler {
           if (isBlob) {
             // 写缓存
             File parent = cacheFile.getParentFile();
-            if (!parent.exists())
+            if (!parent.exists()) {
               parent.mkdirs();
+            }
             try (FileOutputStream fos = new FileOutputStream(cacheFile)) {
               fos.write(respBytes);
             }
             log.info("Cache WRITE: {} ({})", cacheFile.getAbsolutePath(), contentType);
           } else {
+            // 响应头
+            Headers respH = upstreamResp.headers();
+            for (String name : respH.names()) {
+              response.setHeader(name, respH.get(name));
+            }
             log.info("Skip cache for unsupported type: {}", contentType);
           }
         }
