@@ -11,12 +11,14 @@ import com.litongjava.tio.boot.http.TioRequestContext;
 import com.litongjava.tio.http.common.HttpRequest;
 import com.litongjava.tio.http.common.HttpResponse;
 
+import lombok.extern.slf4j.Slf4j;
 import okhttp3.Headers;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
+@Slf4j
 public class DockerV2AuthHandler {
   private static final OkHttpClient HTTP = new OkHttpClient.Builder().followRedirects(true).build();
 
@@ -27,6 +29,7 @@ public class DockerV2AuthHandler {
 
     // 构造 upstream auth URL
     HttpUrl upstreamUrl = HttpUrl.parse(DockerHubConst.UPSTREAM_TOKEN).newBuilder().encodedPath(path).encodedQuery(query).build();
+    log.info("upstreamUrl:{}", upstreamUrl);
 
     Request.Builder rb = new Request.Builder().url(upstreamUrl).method(req.getMethod().toString(), null);
 
