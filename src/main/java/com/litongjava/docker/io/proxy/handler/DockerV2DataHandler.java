@@ -89,18 +89,23 @@ public class DockerV2DataHandler {
 
         // 缓存写文件
         if ("GET".equalsIgnoreCase(method) && upstreamResp.code() == 200) {
-          try {
-            File parent = cacheFile.getParentFile();
-            if (!parent.exists()) {
-              parent.mkdirs();
-            }
+          String contentType = upstreamResp.header("Content-Type", "");
+          if (contentType.contains("vnd.docker.distribution.manifest")) {
+            try {
+              File parent = cacheFile.getParentFile();
+              if (!parent.exists()) {
+                parent.mkdirs();
+              }
 
-            try (FileOutputStream fos = new FileOutputStream(cacheFile)) {
-              fos.write(respBytes);
+              try (FileOutputStream fos = new FileOutputStream(cacheFile)) {
+                fos.write(respBytes);
+              }
+              log.info("Cache WRITE: {}", cacheFile.getAbsolutePath());
+            } catch (IOException ioe) {
+              log.warn("写入缓存失败: {}", cacheFile.getAbsolutePath(), ioe);
             }
-            log.info("Cache WRITE: {}", cacheFile.getAbsolutePath());
-          } catch (IOException ioe) {
-            log.warn("写入缓存失败: {}", cacheFile.getAbsolutePath(), ioe);
+          } else {
+            log.info("Skip cache for unsupported mediaType: {}", contentType);
           }
         }
       }
