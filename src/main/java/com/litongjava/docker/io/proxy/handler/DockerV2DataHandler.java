@@ -48,7 +48,7 @@ public class DockerV2DataHandler {
     File cacheFile = new File(DockerHubConst.CACHE_DIR, safePath);
 
     // 3. 如果是 GET 且缓存命中，直接返回
-    if ("GET".equalsIgnoreCase(method) && cacheFile.exists()) {
+    if ("GET".equalsIgnoreCase(method) && uri.contains("/blobs/") && cacheFile.exists()) {
       try {
         byte[] data = Files.readAllBytes(cacheFile.toPath());
         response.setStatus(200);
@@ -90,24 +90,22 @@ public class DockerV2DataHandler {
         // 缓存写文件
         if ("GET".equalsIgnoreCase(method) && upstreamResp.code() == 200) {
           String contentType = upstreamResp.header("Content-Type", "");
-          if (contentType.contains("vnd.docker.distribution.manifest")) {
-            try {
-              File parent = cacheFile.getParentFile();
-              if (!parent.exists()) {
-                parent.mkdirs();
-              }
 
-              try (FileOutputStream fos = new FileOutputStream(cacheFile)) {
-                fos.write(respBytes);
-              }
-              log.info("Cache WRITE: {}", cacheFile.getAbsolutePath());
-            } catch (IOException ioe) {
-              log.warn("写入缓存失败: {}", cacheFile.getAbsolutePath(), ioe);
+          boolean isBlob = uri.contains("/blobs/");
+          if (isBlob) {
+            // 写缓存
+            File parent = cacheFile.getParentFile();
+            if (!parent.exists())
+              parent.mkdirs();
+            try (FileOutputStream fos = new FileOutputStream(cacheFile)) {
+              fos.write(respBytes);
             }
+            log.info("Cache WRITE: {} ({})", cacheFile.getAbsolutePath(), contentType);
           } else {
-            log.info("Skip cache for unsupported mediaType: {}", contentType);
+            log.info("Skip cache for unsupported type: {}", contentType);
           }
         }
+
       }
     } catch (IOException e) {
       // 上游失败则 502
