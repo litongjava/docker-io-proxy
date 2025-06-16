@@ -38,7 +38,9 @@ public class DockerV2AuthHandler {
 
     try (Response upr = HTTP.newCall(rb.build()).execute()) {
       HttpResponse resp = TioRequestContext.getResponse();
-      resp.setStatus(upr.code());
+      int code = upr.code();
+      log.info("code:{}", code);
+      resp.setStatus(code);
 
       // 透传 upstream headers（Content-Type: application/json 等）
       Headers headers = upr.headers();
