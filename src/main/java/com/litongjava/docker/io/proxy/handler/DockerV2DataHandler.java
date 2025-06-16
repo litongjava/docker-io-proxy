@@ -3,7 +3,6 @@ package com.litongjava.docker.io.proxy.handler;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.Map;
 
 import com.litongjava.docker.io.proxy.consts.DockerHubConst;
@@ -49,15 +48,10 @@ public class DockerV2DataHandler {
 
     // 3. 如果是 GET 且缓存命中，直接返回
     if ("GET".equalsIgnoreCase(method) && uri.contains("/blobs/") && cacheFile.exists()) {
-      try {
-        byte[] data = Files.readAllBytes(cacheFile.toPath());
-        response.setStatus(200);
-        response.setBody(data);
-        log.info("Cache HIT: {}", cacheFile.getAbsolutePath());
-        return response;
-      } catch (IOException e) {
-        log.warn("读取缓存失败，回源: {}", cacheFile.getAbsolutePath(), e);
-      }
+      log.info("Cache HIT: {}", cacheFile.getAbsolutePath());
+      response.setStatus(200);
+      response.setFileBody(cacheFile);
+      return response;
     }
 
     // 4. 构造并发起上游请求
@@ -76,26 +70,29 @@ public class DockerV2DataHandler {
     // 6. 执行请求并同步返回
     try (Response upstreamResp = httpClient.newCall(reqBuilder.build()).execute()) {
       // 状态码
-      response.setStatus(upstreamResp.code());
+      int code = upstreamResp.code();
+      log.info("code:{}", code);
+      response.setStatus(code);
       // 响应体（非 HEAD）
       if (!"HEAD".equalsIgnoreCase(method) && upstreamResp.body() != null) {
-        byte[] respBytes = upstreamResp.body().bytes();
-        response.setBody(respBytes);
-
         // 缓存写文件
-        if ("GET".equalsIgnoreCase(method) && upstreamResp.code() == 200) {
+        if ("GET".equalsIgnoreCase(method) && code == 200) {
           String contentType = upstreamResp.header("Content-Type", "");
 
           boolean isBlob = uri.contains("/blobs/");
+
           if (isBlob) {
             // 写缓存
             File parent = cacheFile.getParentFile();
             if (!parent.exists()) {
               parent.mkdirs();
             }
+            byte[] respBytes = upstreamResp.body().bytes();
             try (FileOutputStream fos = new FileOutputStream(cacheFile)) {
               fos.write(respBytes);
             }
+            response.setFileBody(cacheFile);
+
             log.info("Cache WRITE: {} ({})", cacheFile.getAbsolutePath(), contentType);
           } else {
             // 响应头
@@ -103,8 +100,16 @@ public class DockerV2DataHandler {
             for (String name : respH.names()) {
               response.setHeader(name, respH.get(name));
             }
+            //响应体
+            String string = upstreamResp.body().string();
+            response.setBody(string.getBytes(request.getHttpConfig().getCharset()));
             log.info("Skip cache for unsupported type: {}", contentType);
           }
+        }
+      } else {
+        Headers respH = upstreamResp.headers();
+        for (String name : respH.names()) {
+          response.setHeader(name, respH.get(name));
         }
       }
     } catch (IOException e) {

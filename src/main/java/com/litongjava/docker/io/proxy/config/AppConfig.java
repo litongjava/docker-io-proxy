@@ -1,6 +1,7 @@
 package com.litongjava.docker.io.proxy.config;
 
 import com.litongjava.context.BootConfiguration;
+import com.litongjava.docker.io.proxy.handler.BigFileHandler;
 import com.litongjava.docker.io.proxy.handler.DockerV2AuthHandler;
 import com.litongjava.docker.io.proxy.handler.DockerV2DataHandler;
 import com.litongjava.docker.io.proxy.handler.DockerV2RootHandler;
@@ -25,5 +26,8 @@ public class AppConfig implements BootConfiguration {
 
     DockerV2AuthHandler dockerV2AuthHandler = new DockerV2AuthHandler();
     requestRouter.add("/token", dockerV2AuthHandler::index);
+    
+    BigFileHandler bigFile = new BigFileHandler();
+    requestRouter.add("/file", bigFile::index);
   }
 }
