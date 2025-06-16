@@ -78,10 +78,10 @@ public class DockerV2DataHandler {
       // 状态码
       response.setStatus(upstreamResp.code());
       // 响应头
-      Headers respH = upstreamResp.headers();
-      for (String name : respH.names()) {
-        response.setHeader(name, respH.get(name));
-      }
+//      Headers respH = upstreamResp.headers();
+//      for (String name : respH.names()) {
+//        response.setHeader(name, respH.get(name));
+//      }
       // 响应体（非 HEAD）
       if (!"HEAD".equalsIgnoreCase(method) && upstreamResp.body() != null) {
         byte[] respBytes = upstreamResp.body().bytes();
@@ -105,7 +105,6 @@ public class DockerV2DataHandler {
             log.info("Skip cache for unsupported type: {}", contentType);
           }
         }
-
       }
     } catch (IOException e) {
       // 上游失败则 502
