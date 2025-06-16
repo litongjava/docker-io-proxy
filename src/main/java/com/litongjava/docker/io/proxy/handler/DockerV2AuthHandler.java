@@ -1,18 +1,15 @@
 package com.litongjava.docker.io.proxy.handler;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import com.litongjava.docker.io.proxy.consts.DockerHubConst;
 import com.litongjava.docker.io.proxy.utils.HttpProxyUtils;
 import com.litongjava.tio.boot.http.TioRequestContext;
 import com.litongjava.tio.http.common.HttpRequest;
 import com.litongjava.tio.http.common.HttpResponse;
+import com.litongjava.tio.http.common.MimeType;
 
 import lombok.extern.slf4j.Slf4j;
-import okhttp3.Headers;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -43,15 +40,15 @@ public class DockerV2AuthHandler {
       resp.setStatus(code);
 
       // 透传 upstream headers（Content-Type: application/json 等）
-      Headers headers = upr.headers();
-      Map<String, List<String>> multimap = headers.toMultimap();
-      for (Entry<String, List<String>> h : multimap.entrySet()) {
-        resp.setHeader(h.getKey(), String.join(",", h.getValue()));
-      }
+//      Headers headers = upr.headers();
+//      Map<String, List<String>> multimap = headers.toMultimap();
+//      for (Entry<String, List<String>> h : multimap.entrySet()) {
+//        resp.setHeader(h.getKey(), String.join(",", h.getValue()));
+//      }
 
       // 把 body 原样返回
       if (upr.body() != null) {
-        resp.setBody(upr.body().bytes());
+        resp.setString(upr.body().string(), req.getHttpConfig().getCharset(), MimeType.APPLICATION_JSON.toString());
       }
       return resp;
     }

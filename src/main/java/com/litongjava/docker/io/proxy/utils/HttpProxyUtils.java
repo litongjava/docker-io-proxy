@@ -16,7 +16,7 @@ public class HttpProxyUtils {
           //
           || "trailer".equalsIgnoreCase(key) || "transfer-encoding".equalsIgnoreCase(key)
           //
-          || "upgrade".equalsIgnoreCase(key)) {
+          || "upgrade".equalsIgnoreCase(key) || "accept-encoding".equals(key)) {
         continue;
       }
       rb.header(key, h.getValue());
