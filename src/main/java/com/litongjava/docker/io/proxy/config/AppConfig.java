@@ -16,18 +16,18 @@ public class AppConfig implements BootConfiguration {
     TioBootServer server = TioBootServer.me();
     HttpRequestRouter requestRouter = server.getRequestRouter();
     IndexHandler indexHandler = new IndexHandler();
-    requestRouter.add("/", indexHandler::index);
+    requestRouter.add("/", indexHandler);
 
     DockerV2RootHandler V2RootHandler = new DockerV2RootHandler();
-    requestRouter.add("/v2/", V2RootHandler::index);
+    requestRouter.add("/v2/", V2RootHandler);
 
     DockerV2DataHandler indexV2Handler = new DockerV2DataHandler();
-    requestRouter.add("/v2/*", indexV2Handler::index);
+    requestRouter.add("/v2/*", indexV2Handler);
 
     DockerV2AuthHandler dockerV2AuthHandler = new DockerV2AuthHandler();
-    requestRouter.add("/token", dockerV2AuthHandler::index);
+    requestRouter.add("/token", dockerV2AuthHandler);
     
     BigFileHandler bigFile = new BigFileHandler();
-    requestRouter.add("/file", bigFile::index);
+    requestRouter.add("/file", bigFile);
   }
 }

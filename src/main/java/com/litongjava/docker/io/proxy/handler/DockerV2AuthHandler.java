@@ -1,13 +1,12 @@
 package com.litongjava.docker.io.proxy.handler;
 
-import java.io.IOException;
-
 import com.litongjava.docker.io.proxy.consts.DockerHubConst;
 import com.litongjava.docker.io.proxy.utils.HttpProxyUtils;
 import com.litongjava.tio.boot.http.TioRequestContext;
 import com.litongjava.tio.http.common.HttpRequest;
 import com.litongjava.tio.http.common.HttpResponse;
 import com.litongjava.tio.http.common.MimeType;
+import com.litongjava.tio.http.server.handler.HttpRequestHandler;
 
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.HttpUrl;
@@ -16,10 +15,11 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 @Slf4j
-public class DockerV2AuthHandler {
+public class DockerV2AuthHandler implements HttpRequestHandler {
   private static final OkHttpClient HTTP = new OkHttpClient.Builder().followRedirects(true).build();
 
-  public HttpResponse index(HttpRequest req) throws IOException {
+  @Override
+  public HttpResponse handle(HttpRequest req) throws Exception {
     // 从原请求中取 path 和 query
     String path = req.getRequestURI(); // 应该是 "/token"
     String query = req.getRequestLine().getQueryString();
@@ -48,9 +48,11 @@ public class DockerV2AuthHandler {
 
       // 把 body 原样返回
       if (upr.body() != null) {
-        resp.setString(upr.body().string(), req.getHttpConfig().getCharset(), MimeType.APPLICATION_JSON.toString());
+        String charset = req.getCharset();
+        resp.setString(upr.body().string(), charset, MimeType.APPLICATION_JSON.toString());
       }
       return resp;
     }
   }
+
 }

@@ -5,12 +5,14 @@ import java.io.File;
 import com.litongjava.tio.boot.http.TioRequestContext;
 import com.litongjava.tio.http.common.HttpRequest;
 import com.litongjava.tio.http.common.HttpResponse;
+import com.litongjava.tio.http.server.handler.HttpRequestHandler;
 
-public class BigFileHandler {
+public class BigFileHandler implements HttpRequestHandler {
 
-  public HttpResponse index(HttpRequest request) {
+  @Override
+  public HttpResponse handle(HttpRequest httpRequest) throws Exception {
     HttpResponse response = TioRequestContext.getResponse();
-    String file = "F:\\video\\左程云-算法课\\03.进阶班\\255445ddd42abd3da5bfdc129ad52cf5.mp4";
+    String file = "255445ddd42abd3da5bfdc129ad52cf5.mp4";
     File cacheFile = new File(file);
     response.setFileBody(cacheFile);
     return response;

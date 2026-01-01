@@ -3,9 +3,12 @@ package com.litongjava.docker.io.proxy.handler;
 import com.litongjava.tio.boot.http.TioRequestContext;
 import com.litongjava.tio.http.common.HttpRequest;
 import com.litongjava.tio.http.common.HttpResponse;
+import com.litongjava.tio.http.server.handler.HttpRequestHandler;
 
-public class IndexHandler {
-  public HttpResponse index(HttpRequest request) {
+public class IndexHandler implements HttpRequestHandler {
+
+  @Override
+  public HttpResponse handle(HttpRequest httpRequest) throws Exception {
     HttpResponse response = TioRequestContext.getResponse();
     return response;
   }

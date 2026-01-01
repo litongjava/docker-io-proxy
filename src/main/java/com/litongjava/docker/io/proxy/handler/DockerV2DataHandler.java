@@ -10,6 +10,7 @@ import com.litongjava.docker.io.proxy.utils.HttpProxyUtils;
 import com.litongjava.tio.boot.http.TioRequestContext;
 import com.litongjava.tio.http.common.HttpRequest;
 import com.litongjava.tio.http.common.HttpResponse;
+import com.litongjava.tio.http.server.handler.HttpRequestHandler;
 
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.Headers;
@@ -19,14 +20,16 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 @Slf4j
-public class DockerV2DataHandler {
+public class DockerV2DataHandler implements HttpRequestHandler{
 
   private static final OkHttpClient httpClient = new OkHttpClient.Builder().followRedirects(true).build();
 
   /**
    * 统一处理 /v2/ 开头的所有 HTTP 方法
    */
-  public HttpResponse index(HttpRequest request) {
+
+  @Override
+  public HttpResponse handle(HttpRequest request) throws Exception {
     HttpResponse response = TioRequestContext.getResponse();
     String method = request.getMethod().toString(); // GET, HEAD, POST…
     String uri = request.getRequestURI(); // /v2/.../manifests/...
@@ -102,7 +105,8 @@ public class DockerV2DataHandler {
             }
             //响应体
             String string = upstreamResp.body().string();
-            response.setBody(string.getBytes(request.getHttpConfig().getCharset()));
+            String charset = request.getCharset();
+            response.setBody(string.getBytes(charset));
             log.info("Skip cache for unsupported type: {}", contentType);
           }
         }
